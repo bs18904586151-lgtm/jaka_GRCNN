@@ -27,9 +27,9 @@ class CameraData:
         if include_depth is False and include_rgb is False:
             raise ValueError('At least one of Depth or RGB must be specified.')
 
-        left = (width - output_size) // 2
+        left = (width - output_size) // 2 #170  640-300
         top = (height - output_size) // 2
-        right = (width + output_size) // 2
+        right = (width + output_size) // 2 #470
         bottom = (height + output_size) // 2
 
         self.bottom_right = (bottom, right)
@@ -38,12 +38,12 @@ class CameraData:
     @staticmethod
     def numpy_to_torch(s):
         if len(s.shape) == 2:
-            return torch.from_numpy(np.expand_dims(s, 0).astype(np.float32))
+            return torch.from_numpy(np.expand_dims(s, 0).astype(float))
         else:
-            return torch.from_numpy(s.astype(np.float32))
+            return torch.from_numpy(s.astype(float))
 
     def get_depth(self, img):
-        depth_img = image.Image(img)
+        depth_img = image.DepthImage(img)
         depth_img.crop(bottom_right=self.bottom_right, top_left=self.top_left)
         depth_img.normalise()
         # depth_img.resize((self.output_size, self.output_size))
@@ -65,21 +65,26 @@ class CameraData:
         # Load the depth image
         if self.include_depth:
             depth_img = self.get_depth(img=depth)
+            # depth_img = np.expand_dims(depth_img, axis=0)
+
 
         # Load the RGB image
         if self.include_rgb:
             rgb_img = self.get_rgb(img=rgb)
 
         if self.include_depth and self.include_rgb:
+            # print(np.expand_dims(depth_img, 0).shape)
+            # print(np.expand_dims(rgb_img, 0).shape)
             x = self.numpy_to_torch(
                     np.concatenate(
                         (np.expand_dims(depth_img, 0),
                          np.expand_dims(rgb_img, 0)),
-                        1
+                        axis=1
                     )
                 )
         elif self.include_depth:
-            x = self.numpy_to_torch(depth_img)
+            # print(np.expand_dims(depth_img, 0).shape)
+            x = self.numpy_to_torch(np.expand_dims(depth_img, 0))
         elif self.include_rgb:
             x = self.numpy_to_torch(np.expand_dims(rgb_img, 0))
 

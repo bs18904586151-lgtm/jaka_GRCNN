@@ -9,7 +9,7 @@ def get_device(force_cpu):
     # Check if CUDA can be used
     if torch.cuda.is_available() and not force_cpu:
         logging.info("CUDA detected. Running with GPU acceleration.")
-        device = torch.device("cuda")
+        device = torch.device("cuda:0")
     elif force_cpu:
         logging.info("CUDA detected, but overriding with option '--cpu'. Running with only CPU.")
         device = torch.device("cpu")

@@ -27,7 +27,7 @@ def parse_args():
     # Network
     parser.add_argument('--network', type=str, default='grconvnet3',
                         help='Network name in inference/models')
-    parser.add_argument('--input-size', type=int, default=224,
+    parser.add_argument('--input-size', type=int, default=300,
                         help='Input image size for the network')
     parser.add_argument('--use-depth', type=int, default=1,
                         help='Use Depth image for training (1/0)')
@@ -43,9 +43,9 @@ def parse_args():
                         help='Threshold for IOU matching')
 
     # Datasets
-    parser.add_argument('--dataset', type=str,
-                        help='Dataset Name ("cornell" or "jaquard")')
-    parser.add_argument('--dataset-path', type=str,
+    parser.add_argument('--dataset', type=str,default="jacquard",
+                        help='Dataset Name ("cornell" or "jacquard")')
+    parser.add_argument('--dataset-path', type=str,default="/media/randy/299D817A2D97AD94/xxw/Jacquard/",
                         help='Path to dataset')
     parser.add_argument('--split', type=float, default=0.9,
                         help='Fraction of data for training (remainder is validation)')
@@ -120,6 +120,7 @@ def validate(net, device, val_data, iou_threshold):
 
             q_out, ang_out, w_out = post_process_output(lossd['pred']['pos'], lossd['pred']['cos'],
                                                         lossd['pred']['sin'], lossd['pred']['width'])
+            # print(q_out.shape)
 
             s = evaluation.calculate_iou_match(q_out,
                                                ang_out,
@@ -241,7 +242,7 @@ def run():
     logging.getLogger('').addHandler(console)
 
     # Get the compute device
-    device = get_device(args.force_cpu)
+    device = torch.device('cuda:0')
 
     # Load Dataset
     logging.info('Loading {} Dataset...'.format(args.dataset.title()))
@@ -287,18 +288,19 @@ def run():
     logging.info('Loading Network...')
     input_channels = 1 * args.use_depth + 3 * args.use_rgb
     network = get_network(args.network)
+    #net = torch.load('trained-models/jacquard-rgbd-grconvnet3-drop0-ch32/epoch_48_iou_0.93')
     net = network(
-        input_channels=input_channels,
-        dropout=args.use_dropout,
-        prob=args.dropout_prob,
-        channel_size=args.channel_size
-    )
+         input_channels=input_channels,
+         dropout=args.use_dropout,
+         prob=args.dropout_prob,
+         channel_size=args.channel_size
+     )
 
     net = net.to(device)
     logging.info('Done')
 
     if args.optim.lower() == 'adam':
-        optimizer = optim.Adam(net.parameters())
+        optimizer = optim.Adam(net.parameters(),lr=0.00001)
     elif args.optim.lower() == 'sgd':
         optimizer = optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
     else:

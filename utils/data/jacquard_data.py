@@ -48,13 +48,13 @@ class JacquardDataset(GraspDatasetBase):
         return depth_img.img
 
     def get_rgb(self, idx, rot=0, zoom=1.0, normalise=True):
-        rgb_img = image.Image.from_file(self.rgb_files[idx])
+        rgb_img = image.Image.from_file(self.rgb_files[idx])  #bgr
         rgb_img.rotate(rot)
         rgb_img.zoom(zoom)
         rgb_img.resize((self.output_size, self.output_size))
         if normalise:
             rgb_img.normalise()
-            rgb_img.img = rgb_img.img.transpose((2, 0, 1))
+            rgb_img.img = rgb_img.img.transpose((2, 0, 1)) #rgb
         return rgb_img.img
 
     def get_jname(self, idx):

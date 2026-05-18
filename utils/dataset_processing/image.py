@@ -54,7 +54,7 @@ class Image:
         """
         Normalise the image by converting to float [0,1] and zero-centering
         """
-        self.img = self.img.astype(np.float32) / 255.0
+        self.img = self.img.astype(float) / 255.0
         self.img -= self.img.mean()
 
     def resize(self, shape):
@@ -172,20 +172,20 @@ class DepthImage(Image):
     def from_tiff(cls, fname):
         return cls(imread(fname))
 
-    def inpaint(self, missing_value=0):
+    def iint(self, missing_value=0):
         """
-        Inpaint missing values in depth image.
+        Iint missing values in depth image.
         :param missing_value: Value to fill in teh depth image.
         """
-        # cv2 inpainting doesn't handle the border properly
-        # https://stackoverflow.com/questions/25974033/inpainting-depth-map-still-a-black-image-border
+        # cv2 iinting doesn't handle the border properly
+        # https://stackoverflow.com/questions/25974033/iinting-depth-map-still-a-black-image-border
         self.img = cv2.copyMakeBorder(self.img, 1, 1, 1, 1, cv2.BORDER_DEFAULT)
         mask = (self.img == missing_value).astype(np.uint8)
 
         # Scale to keep as float, but has to be in bounds -1:1 to keep opencv happy.
         scale = np.abs(self.img).max()
-        self.img = self.img.astype(np.float32) / scale  # Has to be float32, 64 not supported.
-        self.img = cv2.inpaint(self.img, mask, 1, cv2.INPAINT_NS)
+        self.img = self.img.astype(float) / scale  # Has to be float32, 64 not supported.
+        self.img = cv2.iint(self.img, mask, 1, cv2.INPAINT_NS)
 
         # Back to original size and value range.
         self.img = self.img[1:-1, 1:-1]

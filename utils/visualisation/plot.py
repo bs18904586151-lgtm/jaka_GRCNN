@@ -108,7 +108,7 @@ def plot_grasp(
     ax.set_title('Grasp')
     ax.axis('off')
 
-    plt.pause(0.1)
+    plt.pause(2)
     fig.canvas.draw()
 
     if save:

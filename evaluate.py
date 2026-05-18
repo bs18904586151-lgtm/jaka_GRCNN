@@ -1,6 +1,8 @@
 import argparse
 import logging
 import time
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 import numpy as np
 import torch.utils.data
@@ -18,15 +20,15 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Evaluate networks')
 
     # Network
-    parser.add_argument('--network', metavar='N', type=str, nargs='+',
+    parser.add_argument('--network', metavar='N', type=str,nargs='+',
                         help='Path to saved networks to evaluate')
-    parser.add_argument('--input-size', type=int, default=224,
+    parser.add_argument('--input-size', type=int, default=300,
                         help='Input image size for the network')
 
     # Dataset
-    parser.add_argument('--dataset', type=str,
+    parser.add_argument('--dataset', type=str,default="jacquard",
                         help='Dataset Name ("cornell" or "jaquard")')
-    parser.add_argument('--dataset-path', type=str,
+    parser.add_argument('--dataset-path', type=str,default="/media/randy/299D817A2D97AD94/xxw/Jacquard/",
                         help='Path to dataset')
     parser.add_argument('--use-depth', type=int, default=1,
                         help='Use Depth image for evaluation (1/0)')
@@ -74,8 +76,7 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
 
-    # Get the compute device
-    device = get_device(args.force_cpu)
+    device = torch.device("cpu")
 
     # Load Dataset
     logging.info('Loading {} Dataset...'.format(args.dataset.title()))
@@ -93,14 +94,14 @@ if __name__ == '__main__':
     if args.ds_shuffle:
         np.random.seed(args.random_seed)
         np.random.shuffle(indices)
-    val_indices = indices[split:]
+    val_indices = indices[:100]
     val_sampler = torch.utils.data.sampler.SubsetRandomSampler(val_indices)
     logging.info('Validation size: {}'.format(len(val_indices)))
 
     test_data = torch.utils.data.DataLoader(
         test_dataset,
         batch_size=1,
-        num_workers=args.num_workers,
+        num_workers=0,
         sampler=val_sampler
     )
     logging.info('Done')
@@ -109,7 +110,8 @@ if __name__ == '__main__':
         logging.info('\nEvaluating model {}'.format(network))
 
         # Load Network
-        net = torch.load(network)
+        net = torch.load(network,map_location='cpu')
+        #net.to(device)
 
         results = {'correct': 0, 'failed': 0}
 

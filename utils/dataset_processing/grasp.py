@@ -181,7 +181,7 @@ class GraspRectangles:
         if pad_to:
             if pad_to > len(self.grs):
                 a = np.concatenate((a, np.zeros((pad_to - len(self.grs), 4, 2))))
-        return a.astype(np.int)
+        return a.astype(int)
 
     @property
     def center(self):
@@ -190,7 +190,7 @@ class GraspRectangles:
         :return: float, mean centre of all GraspRectangles
         """
         points = [gr.points for gr in self.grs]
-        return np.mean(np.vstack(points), axis=0).astype(np.int)
+        return np.mean(np.vstack(points), axis=0).astype(int)
 
 
 class GraspRectangle:
@@ -225,7 +225,7 @@ class GraspRectangle:
         """
         :return: Rectangle center point
         """
-        return self.points.mean(axis=0).astype(np.int)
+        return self.points.mean(axis=0).astype(int)
 
     @property
     def length(self):
@@ -306,6 +306,7 @@ class GraspRectangle:
         :param angle: Angle to rotate (in radians)
         :param center: Point to rotate around (e.g. image center)
         """
+        angle = float(angle)
         R = np.array(
             [
                 [np.cos(-angle), np.sin(-angle)],
@@ -313,7 +314,7 @@ class GraspRectangle:
             ]
         )
         c = np.array(center).reshape((1, 2))
-        self.points = ((np.dot(R, (self.points - c).T)).T + c).astype(np.int)
+        self.points = ((np.dot(R, (self.points - c).T)).T + c).astype(int)
 
     def scale(self, factor):
         """
@@ -338,6 +339,7 @@ class GraspRectangle:
         :param factor: Zoom factor
         :param center: Zoom zenter (focus point, e.g. image center)
         """
+        factor = float(factor)
         T = np.array(
             [
                 [1 / factor, 0],
@@ -345,7 +347,7 @@ class GraspRectangle:
             ]
         )
         c = np.array(center).reshape((1, 2))
-        self.points = ((np.dot(T, (self.points - c).T)).T + c).astype(np.int)
+        self.points = ((np.dot(T, (self.points - c).T)).T + c).astype(int)
 
 
 class Grasp:
@@ -380,7 +382,7 @@ class Grasp:
                 [y2 + self.width / 2 * xo, x2 + self.width / 2 * yo],
                 [y1 + self.width / 2 * xo, x1 + self.width / 2 * yo],
             ]
-        ).astype(np.float))
+        ).astype(float))
 
     def max_iou(self, grs):
         """
@@ -424,7 +426,7 @@ def detect_grasps(q_img, ang_img, width_img=None, no_grasps=1):
     :param no_grasps: Max number of grasps to return
     :return: list of Grasps
     """
-    local_max = peak_local_max(q_img, min_distance=20, threshold_abs=0.2, num_peaks=no_grasps)
+    local_max = peak_local_max(q_img, min_distance=20, threshold_abs=0.2, num_peaks=no_grasps) #128 220
 
     grasps = []
     for grasp_point_array in local_max:
@@ -435,7 +437,8 @@ def detect_grasps(q_img, ang_img, width_img=None, no_grasps=1):
         g = Grasp(grasp_point, grasp_angle)
         if width_img is not None:
             g.length = width_img[grasp_point]
-            g.width = g.length / 2
+            g.width = g.length /2
+            # g.width = 20
 
         grasps.append(g)
 

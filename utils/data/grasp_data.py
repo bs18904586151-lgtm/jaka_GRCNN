@@ -37,7 +37,7 @@ class GraspDatasetBase(torch.utils.data.Dataset):
         if len(s.shape) == 2:
             return torch.from_numpy(np.expand_dims(s, 0).astype(np.float32))
         else:
-            return torch.from_numpy(s.astype(np.float32))
+            return torch.from_numpy(s.astype(float))
 
     def get_gtbb(self, idx, rot=0, zoom=1.0):
         raise NotImplementedError()

@@ -17,8 +17,8 @@ if __name__ == '__main__':
 
     for pcd in pcds:
         di = DepthImage.from_pcd(pcd, (480, 640))
-        di.inpaint()
+        di.iint()
 
         of_name = pcd.replace('.txt', 'd.tiff')
         print(of_name)
-        imsave(of_name, di.img.astype(np.float32))
+        imsave(of_name, di.img.astype(float))
